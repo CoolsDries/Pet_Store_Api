@@ -7,7 +7,7 @@ namespace Pet_Store_Api.DTOs
         public string Name { get; set; }
         public string Location { get; set; }
         //TODO: change to SpeciesDTO
-        public ICollection<Species>? SpeciesList { get; set; }
+        public ICollection<SingularSpecies>? SpeciesList { get; set; }
 
         public StoreDTO(Store store)
         {

@@ -1,11 +1,19 @@
-﻿namespace Pet_Store_Api.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Pet_Store_Api.Models
 {
     public class Animal
     {
+        [Key]
         public required int Id { get; set; }
+
+        [Required]
+        public required SingularSpecies SingularSpecies { get; set; }
+
         public string? Name { get; set; }
-        public required Species Species { get; set; }
-        public required int Prijs { get; set; }
+        
+        public int Prijs { get; set; }
+
         public string? Beschrijving { get; set; }
     }
 }
