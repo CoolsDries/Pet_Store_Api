@@ -2,8 +2,8 @@
 {
     public interface IStoreRepository:IDisposable
     {
-        Store GetStoreByID(int id);
-        IEnumerable<Store> GetStores();
+        Task<Store> GetStoreByID(int id);
+        Task<IEnumerable<Store>> GetStores();
         void InsertStore(Store store);
         void DeleteStore(int id);
         void UpdateStore(Store store);
