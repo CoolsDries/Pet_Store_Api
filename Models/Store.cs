@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pet_Store_Api.Models
 {
     public class Store
     {
         [Key]
-        public required int Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
         [Required]
         [MaxLength(100)]
@@ -15,6 +17,6 @@ namespace Pet_Store_Api.Models
         [MaxLength(200)]
         public required string Location { get; set; }
 
-        public ICollection<SingularSpecies>? Species { get; set; }
+        public ICollection<Animal>? Animals { get; set; }
     }
 }

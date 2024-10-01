@@ -1,14 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pet_Store_Api.Models
 {
     public class Animal
     {
         [Key]
-        public required int Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
         [Required]
-        public required SingularSpecies SingularSpecies { get; set; }
+        public required Species Species { get; set; }
+
+        [Required]
+        public required Store store { get; set; }
 
         public string? Name { get; set; }
         
