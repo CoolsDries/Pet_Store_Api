@@ -1,34 +1,32 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Pet_Store_Api.Models;
+﻿using Pet_Store_Api.Models;
 
 namespace Pet_Store_Api.Data.Repositories
 {
-    public class StoreRepository : IStoreRepository, IDisposable
+    public class AnimalRepository : IAnimalRepository, IDisposable
     {
-        private readonly PetStoreContext _context;
         private bool disposedValue;
 
-        public StoreRepository(PetStoreContext context) 
-        {
-            _context = context;
-        }
-
-        public void DeleteStore(int id)
+        public void DeleteAnimal(int id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Store> GetStoreByID(int id)
-        {
-            return await _context.Stores.FirstOrDefaultAsync(s => s.Id == id);
-        }
-
-        public Task<IEnumerable<Store>> GetStores()
+        public Task<Animal> GetAnimalByID(int id)
         {
             throw new NotImplementedException();
         }
 
-        public void InsertStore(Store store)
+        public Task<IEnumerable<Animal>> GetAnimals()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<Animal>> GetAnimalsBySpiecies(int speciesId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InsertAnimal(Animal animal)
         {
             throw new NotImplementedException();
         }
@@ -38,7 +36,7 @@ namespace Pet_Store_Api.Data.Repositories
             throw new NotImplementedException();
         }
 
-        public void UpdateStore(Store store)
+        public void UpdateAnimal(Animal animal)
         {
             throw new NotImplementedException();
         }
@@ -59,7 +57,7 @@ namespace Pet_Store_Api.Data.Repositories
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~StoreRepository()
+        // ~AnimalRepository()
         // {
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         //     Dispose(disposing: false);

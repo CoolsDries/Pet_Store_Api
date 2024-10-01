@@ -1,34 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Pet_Store_Api.Models;
+﻿using Pet_Store_Api.Models;
 
 namespace Pet_Store_Api.Data.Repositories
 {
-    public class StoreRepository : IStoreRepository, IDisposable
+    public class SpeciesRepository : ISpeciesRepository, IDisposable
     {
-        private readonly PetStoreContext _context;
         private bool disposedValue;
 
-        public StoreRepository(PetStoreContext context) 
-        {
-            _context = context;
-        }
-
-        public void DeleteStore(int id)
+        public void DeleteSpecies(int id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Store> GetStoreByID(int id)
-        {
-            return await _context.Stores.FirstOrDefaultAsync(s => s.Id == id);
-        }
-
-        public Task<IEnumerable<Store>> GetStores()
+        public Task<IEnumerable<Species>> GetSpecies()
         {
             throw new NotImplementedException();
         }
 
-        public void InsertStore(Store store)
+        public Task<Species> GetSpeciesByID(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InsertSpecies(Species species)
         {
             throw new NotImplementedException();
         }
@@ -38,7 +31,7 @@ namespace Pet_Store_Api.Data.Repositories
             throw new NotImplementedException();
         }
 
-        public void UpdateStore(Store store)
+        public void UpdateSpecies(Species species)
         {
             throw new NotImplementedException();
         }
@@ -59,7 +52,7 @@ namespace Pet_Store_Api.Data.Repositories
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~StoreRepository()
+        // ~SpeciesRepository()
         // {
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         //     Dispose(disposing: false);
