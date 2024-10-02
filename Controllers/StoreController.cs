@@ -12,7 +12,8 @@ namespace Pet_Store_Api.Controllers
         private readonly IStoreRepository _storeRepository;
         private readonly IAnimalRepository _animalRepository;
         private readonly ISpeciesRepository _speciesRepository;
-        
+
+        // id in StoreController always references storeId
         public StoreController(IStoreRepository storeRepository, IAnimalRepository animalRepository, ISpeciesRepository speciesRepository)
         {
             _storeRepository = storeRepository;
@@ -43,18 +44,13 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // GET: api/Stores/id
+        // GET: api/Stores/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStore(int id)
         {
             try
             {
-                var store = await _storeRepository.GetStoreByID(id);
-
-                if (store == null)
-                {
-                    return NotFound("Store not found."); //code 404
-                }
+                var store = await CheckIfStoreExist(id);
 
                 return Ok(new StoreDTO(store));
             }
@@ -70,12 +66,7 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                var store = await _storeRepository.GetStoreByID(id);
-
-                if (store == null)
-                {
-                    return NotFound("Store not found."); //code 404
-                }
+                await CheckIfStoreExist(id);
 
                 // Not via store.include() because we will need store info and animals seperatly.
                 var animals = await _animalRepository.GetAnimalsByStoreId(id);
@@ -101,12 +92,7 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                var store = await _storeRepository.GetStoreByID(id);
-
-                if (store == null)
-                {
-                    return NotFound("Store not found."); //code 404
-                }
+                await CheckIfStoreExist(id);
 
                 var species = await _speciesRepository.GetSpeciesByStoreId(id);
 
@@ -131,19 +117,9 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                var store = await _storeRepository.GetStoreByID(id);
+                await CheckIfStoreExist(id);
 
-                if (store == null)
-                {
-                    return NotFound("Store not found."); //code 404
-                }
-
-                var species = await _speciesRepository.GetSpeciesById(speciesId);
-
-                if (species == null)
-                {
-                    return NotFound("Species not found."); //code 404
-                }
+                await CheckIfSpeciesExist(id);
 
                 // TODO: Check if store contains species
 
@@ -164,23 +140,20 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // PUT: api/Stores/id
+        // PUT: api/Stores/{id}
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStore(int id, Store store)
         {
-            if (id != store.Id)
-            {
-                return BadRequest("Id does not match store.Id"); //code 400
-            }
-
-            if (await _storeRepository.GetStoreByID(id) == null)
-            {
-                return NotFound("Store not found."); //code 404
-            }
-
             try
-            {               
+            {
+                if (id != store.Id)
+                {
+                    return BadRequest("Id does not match store.Id"); //code 400
+                }
+
+                await CheckIfStoreExist(id);
+
                 _storeRepository.UpdateStore(store);
                 await _storeRepository.Save();
 
@@ -217,17 +190,14 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-            // DELETE: api/Stores/id
-            [HttpDelete("{id}")]
+        // DELETE: api/Stores/{id}
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(int id)
         {
-            if (await _storeRepository.GetStoreByID(id) == null)
-            {
-                return NotFound("Store not found."); //code 404
-            }
-
             try
             {
+                await CheckIfStoreExist(id);
+
                 _storeRepository.DeleteStore(id);
                 await _storeRepository.Save();
 
@@ -237,6 +207,32 @@ namespace Pet_Store_Api.Controllers
             {
                 throw;
             }
+        }
+
+        // Check if store exist and returns store, if not throw not found exception.
+        private async Task<Store> CheckIfStoreExist(int id)
+        {
+            var store = await _storeRepository.GetStoreById(id);
+
+            if (store == null)
+            {
+                throw new NotFoundException($"Store with ID {id} not found.");
+            }
+
+            return store;
+        }
+
+        // Check if speices exist and returns species, if not throw not found exception.
+        private async Task<Species> CheckIfSpeciesExist(int id)
+        {
+            var species = await _speciesRepository.GetSpeciesById(id);
+
+            if (species == null)
+            {
+                throw new NotFoundException($"Species with ID {id} not found.");
+            }
+
+            return species;
         }
     }
 }

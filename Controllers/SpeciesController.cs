@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.IdentityModel.Tokens;
 using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
@@ -13,6 +12,7 @@ namespace Pet_Store_Api.Controllers
         private readonly ISpeciesRepository _speciesRepository;
         private readonly IAnimalRepository _animalRepository;
 
+        // id in SpeciesController always references speciesId
         public SpeciesController(ISpeciesRepository speciesRepository, IAnimalRepository animalRepository)
         {
             _speciesRepository = speciesRepository;
@@ -42,18 +42,14 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // GET: api/Species/id
+        // GET: api/Species/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSpecies(int id)
         {
             try
             {
-                var species = await _speciesRepository.GetSpeciesById(id);
-
-                if (species == null)
-                {
-                    throw new NotFoundException($"Species with ID {id} not found.");
-                }
+                // If species exist, returns that species
+                var species = await CheckIfSpeciesExist(id);
 
                 return Ok(new SpeciesDTO(species));
             }
@@ -69,12 +65,7 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                var species = await _speciesRepository.GetSpeciesById(id);
-
-                if (species == null)
-                {
-                    throw new NotFoundException($"Species with ID {id} not found.");
-                }
+                await CheckIfSpeciesExist(id);
 
                 var animals = await _animalRepository.GetAnimalsBySpieciesId(id);
 
@@ -93,7 +84,7 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // PUT: api/Species/id
+        // PUT: api/Species/{id}
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSpecies(int id, Species species)
@@ -143,7 +134,7 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // DELETE: api/Species/id
+        // DELETE: api/Species/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSpecies(int id)
         {
@@ -162,14 +153,17 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // Check if speices exist, if not throw not found exception.
-        private async Task CheckIfSpeciesExist(int id)
+        // Check if speices exist and returns species, if not throw not found exception.
+        private async Task<Species> CheckIfSpeciesExist(int id)
         {
-            if (await _speciesRepository.GetSpeciesById(id) == null)
+            var species = await _speciesRepository.GetSpeciesById(id);
+
+            if (species == null)
             {
                 throw new NotFoundException($"Species with ID {id} not found.");
             }
-            
+
+            return species;
         }
     }
 }

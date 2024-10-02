@@ -13,7 +13,7 @@ namespace Pet_Store_Api.Data.Repositories
             _context = context;
         }
 
-        public async Task<Store?> GetStoreByID(int id)
+        public async Task<Store?> GetStoreById(int id)
         {
             return await _context.Stores.FirstOrDefaultAsync(s => s.Id == id);
         }

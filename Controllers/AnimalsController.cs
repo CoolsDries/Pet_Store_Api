@@ -11,6 +11,7 @@ namespace Pet_Store_Api.Controllers
     {
         private readonly IAnimalRepository _animalRepository;
 
+        // id in AnimalsController always references animalId
         public AnimalsController(IAnimalRepository animalRepository)
         {
             _animalRepository = animalRepository;
@@ -39,18 +40,14 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // GET: api/Animals/id
+        // GET: api/Animals/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAnimal(int id)
         {
             try
             {
-                var animal = await _animalRepository.GetAnimalById(id);
-
-                if (animal == null)
-                {
-                    return NotFound("Animal not found."); //code 404
-                }
+                // If Animal exist, methode CheckIfAnimalExist returns the animal
+                var animal = await CheckIfAnimalExist(id);
 
                 return Ok(new AnimalDTO(animal));
             }
@@ -60,23 +57,20 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // PUT: api/Animals/id
+        // PUT: api/Animals/{id}
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAnimal(int id, Animal animal)
         {
-            if (id != animal.Id)
-            {
-                return BadRequest("Id does not match animal.Id"); //code 400
-            }
-
-            if (await _animalRepository.GetAnimalById(id) == null)
-            {
-                return NotFound("Animal not found."); //code 404
-            }
-
             try
             {
+                if (id != animal.Id)
+                {
+                    return BadRequest("Id does not match animal.Id"); //code 400
+                }
+
+                await CheckIfAnimalExist(id);
+
                 _animalRepository.UpdateAnimal(animal);
                 await _animalRepository.Save();
 
@@ -113,17 +107,14 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // DELETE: api/Animals/id
+        // DELETE: api/Animals/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAnimal(int id)
         {
-            if (await _animalRepository.GetAnimalById(id) == null)
-            {
-                return NotFound("Store not found."); //code 404
-            }
-
             try
             {
+                await CheckIfAnimalExist(id);
+
                 _animalRepository.DeleteAnimal(id);
                 await _animalRepository.Save();
 
@@ -133,6 +124,19 @@ namespace Pet_Store_Api.Controllers
             {
                 throw;
             }
+        }
+
+        // Check if speices exist and returns species, if not throw not found exception.
+        private async Task<Animal> CheckIfAnimalExist(int id)
+        {
+            var animal = await _animalRepository.GetAnimalById(id);
+
+            if (animal == null)
+            {
+                throw new NotFoundException($"Animal with ID {id} not found.");
+            }
+
+            return animal;
         }
     }
 }
