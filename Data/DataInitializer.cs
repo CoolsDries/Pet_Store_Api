@@ -77,7 +77,7 @@ namespace Pet_Store_Api.Data
                         {
                             Species = species.Value,
                             Name = species.Key + "_" + i.ToString(),
-                            Store = store_0
+                            Store = store_0,
                             // Increase baseprice in 1 in 10 cases with a value between 10 and 50
                             Price = species.Value.BasePrice + ((random.Next(9) == 0) ? random.Next(10, 50) : 0),
                             Discription = species.Key + " discription"
