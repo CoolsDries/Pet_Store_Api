@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Pet_Store_Api.Data;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.IdentityModel.Tokens;
+using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
 
 namespace Pet_Store_Api.Controllers
@@ -14,63 +10,112 @@ namespace Pet_Store_Api.Controllers
     [ApiController]
     public class SpeciesController : ControllerBase
     {
-        private readonly PetStoreContext _context;
+        private readonly ISpeciesRepository _speciesRepository;
+        private readonly IAnimalRepository _animalRepository;
 
-        public SpeciesController(PetStoreContext context)
+        public SpeciesController(ISpeciesRepository speciesRepository, IAnimalRepository animalRepository)
         {
-            _context = context;
+            _speciesRepository = speciesRepository;
+            _animalRepository = animalRepository;
         }
 
         // GET: api/Species
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Species>>> GetSpecies()
+        public async Task<IActionResult> GetSpecies()
         {
-            return await _context.Species.ToListAsync();
-        }
-
-        // GET: api/Species/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Species>> GetSpecies(int id)
-        {
-            var species = await _context.Species.FindAsync(id);
-
-            if (species == null)
+            try
             {
-                return NotFound();
-            }
+                var species = await _speciesRepository.GetSpecies();
 
-            return species;
+                if (species.IsNullOrEmpty())
+                {
+                    return NotFound("Species not found."); //code 404
+                }
+
+                var speciesDTOs = species.Select(s => new SpeciesDTO(s)).ToList();
+
+                return Ok(speciesDTOs);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        // PUT: api/Species/5
+        // GET: api/Species/id
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSpecies(int id)
+        {
+            try
+            {
+                var species = await _speciesRepository.GetSpeciesById(id);
+
+                if (species == null)
+                {
+                    throw new NotFoundException($"Species with ID {id} not found.");
+                }
+
+                return Ok(new SpeciesDTO(species));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        // GET: api/Species/{id}/Animals
+        [HttpGet("{id}/Animals")]
+        public async Task<IActionResult> GetSpeciesAnimals(int id)
+        {
+            try
+            {
+                var species = await _speciesRepository.GetSpeciesById(id);
+
+                if (species == null)
+                {
+                    throw new NotFoundException($"Species with ID {id} not found.");
+                }
+
+                var animals = await _animalRepository.GetAnimalsBySpieciesId(id);
+
+                if (animals.IsNullOrEmpty())
+                {
+                    return NotFound("Animals not found."); //code 404
+                }
+
+                var animalDTOs = animals.Select(a => new AnimalDTO(a)).ToList();
+
+                return Ok(animalDTOs);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        // PUT: api/Species/id
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSpecies(int id, Species species)
         {
             if (id != species.Id)
             {
-                return BadRequest();
+                return BadRequest("Id does not match species.Id"); //code 400
             }
-
-            _context.Entry(species).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SpeciesExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                await CheckIfSpeciesExist(id);
 
-            return NoContent();
+                _speciesRepository.UpdateSpecies(species);
+                await _speciesRepository.Save();
+
+                return Ok(); //code 200
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         // POST: api/Species
@@ -78,31 +123,53 @@ namespace Pet_Store_Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Species>> PostSpecies(Species species)
         {
-            _context.Species.Add(species);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); //code 400
+            }
 
-            return CreatedAtAction("GetSpecies", new { id = species.Id }, species);
+            // TODO: check if resource already exists //code 409
+
+            try
+            {
+                _speciesRepository.InsertSpecies(species);
+                await _speciesRepository.Save();
+
+                return Created(); //code 201
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        // DELETE: api/Species/5
+        // DELETE: api/Species/id
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSpecies(int id)
         {
-            var species = await _context.Species.FindAsync(id);
-            if (species == null)
+            try
             {
-                return NotFound();
+                await CheckIfSpeciesExist(id);
+
+                _speciesRepository.DeleteSpecies(id);
+                await _speciesRepository.Save();
+
+                return Ok(); //code 200
             }
-
-            _context.Species.Remove(species);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        private bool SpeciesExists(int id)
+        // Check if speices exist, if not throw not found exception.
+        private async Task CheckIfSpeciesExist(int id)
         {
-            return _context.Species.Any(e => e.Id == id);
+            if (await _speciesRepository.GetSpeciesById(id) == null)
+            {
+                throw new NotFoundException($"Species with ID {id} not found.");
+            }
+            
         }
     }
 }

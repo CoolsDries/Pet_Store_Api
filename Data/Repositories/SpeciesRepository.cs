@@ -1,62 +1,75 @@
-﻿using Pet_Store_Api.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Pet_Store_Api.Models;
 
 namespace Pet_Store_Api.Data.Repositories
 {
     public class SpeciesRepository : ISpeciesRepository, IDisposable
     {
+        private readonly PetStoreContext _context;
         private bool disposedValue;
 
-        public void DeleteSpecies(int id)
+        public SpeciesRepository(PetStoreContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
         }
 
-        public Task<IEnumerable<Species>> GetSpecies()
+        public async Task<IEnumerable<Species>> GetSpecies()
         {
-            throw new NotImplementedException();
+            return await _context.Species.ToListAsync();
         }
 
-        public Task<Species> GetSpeciesByID(int id)
+        public async Task<Species?> GetSpeciesById(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Species.FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task<IEnumerable<Species>> GetSpeciesByStoreId(int storeId)
+        {
+            // Getting store by id and including the animals list
+            var store = await _context.Stores.Include(s => s.Animals).ThenInclude(a => a.Species).FirstOrDefaultAsync(s => s.Id == storeId);
+
+            // Mapping The animals to theire species and keep unique species
+            // Warning checks are not nessecary, they are already check in the controller
+            var storeSpecies = store.Animals.Select(a => a.Species);
+
+            return storeSpecies.Distinct();
         }
 
         public void InsertSpecies(Species species)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Save()
-        {
-            throw new NotImplementedException();
+            _context.Species.Add(species);  
         }
 
         public void UpdateSpecies(Species species)
         {
-            throw new NotImplementedException();
+            _context.Species.Update(species);
         }
 
+        public void DeleteSpecies(int id)
+        {
+            _context.Species.Where(s => s.Id == id).ExecuteDelete();
+        }
+
+        public async Task Save()
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        // Disposing of _context when repository is no longer needed
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
+                    if (_context != null)
+                    {
+                        _context.Dispose();
+                    }
                 }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 disposedValue = true;
             }
         }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~SpeciesRepository()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
 
         public void Dispose()
         {

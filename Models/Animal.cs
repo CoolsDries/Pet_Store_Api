@@ -13,7 +13,7 @@ namespace Pet_Store_Api.Models
         public required Species Species { get; set; }
 
         [Required]
-        public required Store store { get; set; }
+        public required Store Store { get; set; }
 
         public string? Name { get; set; }
         

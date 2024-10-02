@@ -2,12 +2,14 @@
 {
     public interface IAnimalRepository:IDisposable
     {
-        Task<Animal> GetAnimalByID(int id);
+        Task<Animal?> GetAnimalById(int id);
         Task<IEnumerable<Animal>> GetAnimals();
-        Task<IEnumerable<Animal>> GetAnimalsBySpiecies(int speciesId);
+        Task<IEnumerable<Animal>> GetAnimalsByStoreId(int storeId);
+        Task<IEnumerable<Animal>> GetAnimalsBySpieciesId(int speciesId);
+        Task<IEnumerable<Animal>> GetAnimalsByStoreIdAndSpieciesId(int storeId, int speciesId);
         void InsertAnimal(Animal animal);
         void DeleteAnimal(int id);
         void UpdateAnimal(Animal animal);
-        void Save();
+        Task Save();
     }
 }

@@ -1,67 +1,83 @@
-﻿using Pet_Store_Api.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Pet_Store_Api.Models;
 
 namespace Pet_Store_Api.Data.Repositories
 {
     public class AnimalRepository : IAnimalRepository, IDisposable
     {
+        private readonly PetStoreContext _context;
         private bool disposedValue;
 
-        public void DeleteAnimal(int id)
+        public AnimalRepository(PetStoreContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
+        }
+        public async Task<Animal?> GetAnimalById(int id)
+        {
+            return await _context.Animals.FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public Task<Animal> GetAnimalByID(int id)
+        public async Task<IEnumerable<Animal>> GetAnimals()
         {
-            throw new NotImplementedException();
+            return await _context.Animals.ToListAsync();
         }
 
-        public Task<IEnumerable<Animal>> GetAnimals()
+        public async Task<IEnumerable<Animal>> GetAnimalsByStoreId(int storeId)
         {
-            throw new NotImplementedException();
+            var store = await _context.Stores.FirstOrDefaultAsync(s => s.Id == storeId);
+            return await _context.Animals.Where(a => a.Store == store).ToListAsync();
         }
 
-        public Task<IEnumerable<Animal>> GetAnimalsBySpiecies(int speciesId)
+        public async Task<IEnumerable<Animal>> GetAnimalsBySpieciesId(int speciesId)
         {
-            throw new NotImplementedException();
+            var species = await _context.Species.FirstOrDefaultAsync(s => s.Id == speciesId);
+            return await _context.Animals.Where(a => a.Species == species).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Animal>> GetAnimalsByStoreIdAndSpieciesId(int storeId, int speciesId)
+        {
+            var store = await _context.Stores.FirstOrDefaultAsync(s => s.Id == storeId);
+            var species = await _context.Species.FirstOrDefaultAsync(s => s.Id == speciesId);
+
+            return await _context.Animals.Where(a => a.Store == store && a.Species == species).ToListAsync();
         }
 
         public void InsertAnimal(Animal animal)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Save()
-        {
-            throw new NotImplementedException();
+            _context.Animals.Add(animal);   
         }
 
         public void UpdateAnimal(Animal animal)
         {
-            throw new NotImplementedException();
+            _context.Animals.Update(animal);
         }
 
+        public void DeleteAnimal(int id)
+        {
+            _context.Animals.Where(a => a.Id == id).ExecuteDelete();
+        }
+
+        // Best practices: Avoid async void whenever possible
+        public async Task Save()
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        // Disposing of _context when repository is no longer needed
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
+                    if (_context != null)
+                    {
+                        _context.Dispose();
+                    }
                 }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 disposedValue = true;
             }
         }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~AnimalRepository()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
 
         public void Dispose()
         {

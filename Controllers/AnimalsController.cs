@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Pet_Store_Api.Data;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
 
 namespace Pet_Store_Api.Controllers
@@ -14,63 +9,83 @@ namespace Pet_Store_Api.Controllers
     [ApiController]
     public class AnimalsController : ControllerBase
     {
-        private readonly PetStoreContext _context;
+        private readonly IAnimalRepository _animalRepository;
 
-        public AnimalsController(PetStoreContext context)
+        public AnimalsController(IAnimalRepository animalRepository)
         {
-            _context = context;
+            _animalRepository = animalRepository;
         }
 
         // GET: api/Animals
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Animal>>> GetAnimals()
+        public async Task<IActionResult> GetAnimals()
         {
-            return await _context.Animals.ToListAsync();
-        }
-
-        // GET: api/Animals/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Animal>> GetAnimal(int id)
-        {
-            var animal = await _context.Animals.FindAsync(id);
-
-            if (animal == null)
+            try
             {
-                return NotFound();
-            }
+                var animals = await _animalRepository.GetAnimals();
 
-            return animal;
+                if (animals.IsNullOrEmpty())
+                {
+                    return NotFound("Animals not found."); //code 404
+                }
+
+                var animalDTOs = animals.Select(a => new AnimalDTO(a)).ToList();
+
+                return Ok(animalDTOs);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        // PUT: api/Animals/5
+        // GET: api/Animals/id
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAnimal(int id)
+        {
+            try
+            {
+                var animal = await _animalRepository.GetAnimalById(id);
+
+                if (animal == null)
+                {
+                    return NotFound("Animal not found."); //code 404
+                }
+
+                return Ok(new AnimalDTO(animal));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        // PUT: api/Animals/id
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAnimal(int id, Animal animal)
         {
             if (id != animal.Id)
             {
-                return BadRequest();
+                return BadRequest("Id does not match animal.Id"); //code 400
             }
 
-            _context.Entry(animal).State = EntityState.Modified;
+            if (await _animalRepository.GetAnimalById(id) == null)
+            {
+                return NotFound("Animal not found."); //code 404
+            }
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AnimalExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                _animalRepository.UpdateAnimal(animal);
+                await _animalRepository.Save();
 
-            return NoContent();
+                return Ok(); //code 200
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         // POST: api/Animals
@@ -78,31 +93,46 @@ namespace Pet_Store_Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Animal>> PostAnimal(Animal animal)
         {
-            _context.Animals.Add(animal);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); //code 400
+            }
 
-            return CreatedAtAction("GetAnimal", new { id = animal.Id }, animal);
+            // TODO: check if resource already exists //code 409
+
+            try
+            {
+                _animalRepository.UpdateAnimal(animal);
+                await _animalRepository.Save();
+
+                return Created(); //code 201
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        // DELETE: api/Animals/5
+        // DELETE: api/Animals/id
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAnimal(int id)
         {
-            var animal = await _context.Animals.FindAsync(id);
-            if (animal == null)
+            if (await _animalRepository.GetAnimalById(id) == null)
             {
-                return NotFound();
+                return NotFound("Store not found."); //code 404
             }
 
-            _context.Animals.Remove(animal);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _animalRepository.DeleteAnimal(id);
+                await _animalRepository.Save();
 
-            return NoContent();
-        }
-
-        private bool AnimalExists(int id)
-        {
-            return _context.Animals.Any(e => e.Id == id);
+                return Ok(); //code 200
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

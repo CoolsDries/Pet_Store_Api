@@ -19,6 +19,8 @@ builder.Services.AddSwaggerGen();
 // Dependency injection 
 builder.Services.AddScoped<DataInitializer>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
+builder.Services.AddScoped<ISpeciesRepository, SpeciesRepository>();
+builder.Services.AddScoped<IAnimalRepository, AnimalRepository>();
 
 var app = builder.Build();
 

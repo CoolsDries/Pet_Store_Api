@@ -51,7 +51,7 @@ namespace Pet_Store_Api.Data
                         {
                             Species = newSpecies,
                             Name = spicies + "_" + i.ToString(),
-                            store = store_0
+                            Store = store_0
                         };
                         _context.Animals.Add(animal);
                     }
@@ -63,7 +63,7 @@ namespace Pet_Store_Api.Data
                         {
                             Species = newSpecies,
                             Name = spicies + "_" + i.ToString(),
-                            store = store_1
+                            Store = store_1
                         };
                         _context.Animals.Add(animal);
                     }
