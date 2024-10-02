@@ -31,29 +31,36 @@ namespace Pet_Store_Api.Data
                     Location = "Waasmunster",
                     Animals = []
                 };
-                _context.Stores.AddRange(store_0, store_1);
 
+                Dictionary<String, Species> speciesDict = new Dictionary<String, Species>();
                 // List of spicies
                 Collection<String> spiciesList = ["Frog", "Dog", "Cat", "Turtel", "Mouse"];
                 foreach (var spicies in spiciesList)
                 {
-                    Species newSpecies = new Species
+                    speciesDict[spicies] = new Species
                     {
                         Name = spicies,
                         BasePrice = 5,
                     };
-                    _context.Species.Add(newSpecies);
+                }
+
+                foreach (var species in speciesDict) {
+
+                    // Initialize species animal list, to avoid possibly null reference.
+                    species.Value.Animals ??= [];
 
                     // Animals located in store_0
                     for (int i = 0; i < 10; i++)
                     {
                         Animal animal = new Animal
                         {
-                            Species = newSpecies,
-                            Name = spicies + "_" + i.ToString(),
+                            Species = species.Value,
+                            Name = species.Key + "_" + i.ToString(),
                             Store = store_0
                         };
-                        _context.Animals.Add(animal);
+
+                        species.Value.Animals.Add(animal);
+                        store_0.Animals.Add(animal);
                     }
 
                     // Animals located in store_1
@@ -61,14 +68,17 @@ namespace Pet_Store_Api.Data
                     {
                         Animal animal = new Animal
                         {
-                            Species = newSpecies,
-                            Name = spicies + "_" + i.ToString(),
-                            Store = store_1
+                            Species = species.Value,
+                            Name = species.Key + "_" + i.ToString(),
+                            Store = store_0
                         };
-                        _context.Animals.Add(animal);
+
+                        species.Value.Animals.Add(animal);
+                        store_1.Animals.Add(animal);
                     }
 
                 }
+                _context.Stores.AddRange(store_0, store_1);
                 _context.SaveChanges();
             }
         }

@@ -8,7 +8,6 @@ namespace Pet_Store_Api.DTOs
         public string? Name { get; set; }
         public int BasePrice { get; set; }
         public string? Description { get; set; }
-        public int InStock { get; set; }
 
         public SpeciesDTO(Species species)
         {
@@ -16,7 +15,6 @@ namespace Pet_Store_Api.DTOs
             Name = species.Name;
             BasePrice = species.BasePrice;
             Description = species.Description;
-            InStock = species.InStock;
         }
     }
 }
