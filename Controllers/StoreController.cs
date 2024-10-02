@@ -140,6 +140,50 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
+        // GET: api/Stock
+        // TODO: Swagger documentation
+        [HttpGet("{id}/Stock")]
+        public async Task<IActionResult> GetStoreStock(int id)
+        {
+            try
+            {
+                var store = await CheckIfStoreExist(id);
+
+                var storeStock =  await _storeRepository.GetStoreStock(id);
+
+                if (!storeStock.Any())
+                {
+                    return NotFound("No stock found for this store.");
+                }
+
+                // Initialize return DTO
+                StockDTO stockDTO = new StockDTO
+                {
+                    storeDTO = new StoreDTO(store),
+                    SpeciesStocks = []
+
+                };
+
+                // Add foreach species a speciesstockDTO to the stockDTO
+                foreach (var stock in storeStock)
+                {
+                    SpeciesStockDTO speciesStockDTO = new SpeciesStockDTO
+                    {
+                        speciesDTO = new SpeciesDTO(stock.Key),
+                        AnimalsAmount = stock.Value,
+                    };
+                    stockDTO.SpeciesStocks.Add(speciesStockDTO);
+                }
+
+                return Ok(stockDTO);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+           
+        }
+
         // PUT: api/Stores/{id}
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

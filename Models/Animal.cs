@@ -14,7 +14,7 @@ namespace Pet_Store_Api.Models
         [ForeignKey("Store")]
         public int StoreId { get; set; }
         [ForeignKey("Species")]
-        public int SpiciesId { get; set; }
+        public int SpeciesId { get; set; }
 
         [Required]
         public required Species Species { get; set; }

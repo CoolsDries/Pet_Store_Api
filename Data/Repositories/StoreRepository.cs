@@ -15,13 +15,29 @@ namespace Pet_Store_Api.Data.Repositories
 
         public async Task<Store?> GetStoreById(int id)
         {
-            return await _context.Stores.FirstOrDefaultAsync(s => s.Id == id);
+            return await _context.Stores.Include(s => s.Animals).FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task<IEnumerable<Store>> GetStores()
         {
             // .Include(s => s.Animals)
             return await _context.Stores.ToListAsync();
+        }
+
+        // Done in Repository and not in Domain model, because of Domain limitations.
+        public async Task<IDictionary<Species, int>> GetStoreStock(int id)
+        {
+            // Get all animals from store and group by species and then include species object
+            var animals = await _context.Animals
+                .Where(a => a.StoreId == id)
+                .Include(a => a.Species)
+                .GroupBy(a => a.Species)
+                .ToListAsync();
+
+            // map to dictionary
+            var storeStock = animals.ToDictionary(a => a.Key, a => a.Count());
+
+            return storeStock;
         }
 
         // Insert, Delete and Update, don't need to be async.

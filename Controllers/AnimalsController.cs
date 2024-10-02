@@ -17,6 +17,9 @@ namespace Pet_Store_Api.Controllers
             _animalRepository = animalRepository;
         }
 
+        // TODO: order queries
+        // TODO: swagger documentation
+
         // GET: api/Animals
         [HttpGet]
         public async Task<IActionResult> GetAnimals()

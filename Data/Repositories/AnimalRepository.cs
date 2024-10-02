@@ -36,10 +36,7 @@ namespace Pet_Store_Api.Data.Repositories
 
         public async Task<IEnumerable<Animal>> GetAnimalsByStoreIdAndSpieciesId(int storeId, int speciesId)
         {
-            var store = await _context.Stores.FirstOrDefaultAsync(s => s.Id == storeId);
-            var species = await _context.Species.FirstOrDefaultAsync(s => s.Id == speciesId);
-
-            return await _context.Animals.Where(a => a.Store == store && a.Species == species).ToListAsync();
+            return await _context.Animals.Where(a => a.StoreId == storeId && a.SpeciesId == speciesId).ToListAsync();
         }
 
         public void InsertAnimal(Animal animal)
