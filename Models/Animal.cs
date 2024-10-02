@@ -24,8 +24,9 @@ namespace Pet_Store_Api.Models
 
         public string? Name { get; set; }
         
-        public int Prijs { get; set; }
+        // Posibility to overwrite baseprice set by Species, in case of rare animal
+        public int Price { get; set; }
 
-        public string? Beschrijving { get; set; }
+        public string? Discription { get; set; }
     }
 }

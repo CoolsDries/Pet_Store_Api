@@ -13,7 +13,10 @@ namespace Pet_Store_Api.Data
         }
 
         public void InitializeData()
-        {
+        { 
+            // Random class
+            Random random = new Random();
+
             // Reset database
             _context.Database.EnsureDeleted();
             if (_context.Database.EnsureCreated())
@@ -40,7 +43,8 @@ namespace Pet_Store_Api.Data
                     speciesDict[spicies] = new Species
                     {
                         Name = spicies,
-                        BasePrice = 5,
+                        BasePrice = random.Next(50),
+                        Description = spicies + " discription."
                     };
                 }
 
@@ -50,13 +54,16 @@ namespace Pet_Store_Api.Data
                     species.Value.Animals ??= [];
 
                     // Animals located in store_0
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < random.Next(20); i++)
                     {
                         Animal animal = new Animal
                         {
                             Species = species.Value,
                             Name = species.Key + "_" + i.ToString(),
-                            Store = store_0
+                            Store = store_0,
+                            // Increase baseprice in 1 in 10 cases with a value between 10 and 50
+                            Price = species.Value.BasePrice + ((random.Next(9) == 0) ? random.Next(10, 50) : 0),
+                            Discription = species.Key + " discription"
                         };
 
                         species.Value.Animals.Add(animal);
@@ -64,13 +71,16 @@ namespace Pet_Store_Api.Data
                     }
 
                     // Animals located in store_1
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < random.Next(10); i++)
                     {
                         Animal animal = new Animal
                         {
                             Species = species.Value,
                             Name = species.Key + "_" + i.ToString(),
                             Store = store_0
+                            // Increase baseprice in 1 in 10 cases with a value between 10 and 50
+                            Price = species.Value.BasePrice + ((random.Next(9) == 0) ? random.Next(10, 50) : 0),
+                            Discription = species.Key + " discription"
                         };
 
                         species.Value.Animals.Add(animal);

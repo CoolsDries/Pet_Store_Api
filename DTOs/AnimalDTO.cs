@@ -13,8 +13,8 @@ namespace Pet_Store_Api.DTOs
         {
             Id = animal.Id;
             Name = animal.Name;
-            Prijs = animal.Prijs;
-            Beschrvijng = animal.Beschrijving;
+            Prijs = animal.Price;
+            Beschrvijng = animal.Discription;
         }
     }
 }
