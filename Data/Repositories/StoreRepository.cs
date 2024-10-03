@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore; //Supports LINQ
 using Pet_Store_Api.Models;
 
 namespace Pet_Store_Api.Data.Repositories
@@ -15,6 +15,18 @@ namespace Pet_Store_Api.Data.Repositories
 
         public async Task<Store?> GetStoreById(int id)
         {
+            // TODO: Using Select and converting directly into DTO
+            // So you can controll wich colums are used
+            // Question: DTO management in repo or controller (read conflicting things)
+            //StoreGetDTO storeGetDTO = await _context.Stores
+            //    .Select(s => new StoreGetDTO
+            //    {
+            //        Id = s.Id,
+            //        Name = s.Name,
+            //        Location = s.Location,
+            //    })
+            //    .FirstOrDefaultAsync(s => s.Id == id);
+
             return await _context.Stores.Include(s => s.Animals).FirstOrDefaultAsync(s => s.Id == id);
         }
 

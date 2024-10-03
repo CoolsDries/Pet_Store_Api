@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pet_Store_Api.Models
 {
+    // Question: Store > Species > Animals
+    // or Store > Animals & Species > Animals
+    // Which one is more efficient?
     public class Store
     {
         [Key]

@@ -145,6 +145,7 @@ namespace Pet_Store_Api.Controllers
         [HttpGet("{id}/Stock")]
         public async Task<IActionResult> GetStoreStock(int id)
         {
+            // Question: What is the best way to implement stock info?
             try
             {
                 var store = await CheckIfStoreExist(id);

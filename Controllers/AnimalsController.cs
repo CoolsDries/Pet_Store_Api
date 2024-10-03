@@ -3,6 +3,11 @@ using Microsoft.IdentityModel.Tokens;
 using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
 
+// TODO, Question: Add and implement a Service Layer
+// Controller -> Service -> Repository
+// What needs to be where? (Null, empty checks (everywhere?), other errors)?
+// All busines logica into Services
+
 namespace Pet_Store_Api.Controllers
 {
     [Route("api/[controller]")]
@@ -97,7 +102,7 @@ namespace Pet_Store_Api.Controllers
             {
 
                 // TODO: Better way to keep DTO in controller layer or is this oke?
-                // Problem: Animal requires Store and Species in constructor
+                // Question ,Problem: Animal requires Store and Species in constructor
                 await _animalRepository.InsertAnimal(animalPostDTO);
                 await _animalRepository.Save();
 

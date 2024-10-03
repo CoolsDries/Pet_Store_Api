@@ -8,6 +8,8 @@ namespace Pet_Store_Api.DTOs
         public string? Name { get; set; }
         public string? Location { get; set; }
 
+        public StoreGetDTO() { }
+
         public StoreGetDTO(Store store)
         {
             Id = store.Id;
