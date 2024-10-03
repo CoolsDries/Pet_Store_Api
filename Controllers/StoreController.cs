@@ -34,9 +34,9 @@ namespace Pet_Store_Api.Controllers
                     return NotFound("Stores not found."); //code 404
                 }
 
-                var storeDTOs = stores.Select(s => new StoreDTO(s)).ToList();
+                var storeGetDTOs = stores.Select(s => new StoreGetDTO(s)).ToList();
 
-                return Ok(storeDTOs);
+                return Ok(storeGetDTOs);
             }
             catch (Exception)
             {
@@ -52,7 +52,7 @@ namespace Pet_Store_Api.Controllers
             {
                 var store = await CheckIfStoreExist(id);
 
-                return Ok(new StoreDTO(store));
+                return Ok(new StoreGetDTO(store));
             }
             catch (Exception)
             {
@@ -76,7 +76,7 @@ namespace Pet_Store_Api.Controllers
                     return NotFound("Animals not found."); //code 404
                 }
 
-                var animalsDTOs = animals.Select(a => new AnimalDTO(a)).ToList();
+                var animalsDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
 
                 return Ok(animalsDTOs);
             }
@@ -101,7 +101,7 @@ namespace Pet_Store_Api.Controllers
                     return NotFound("Species not found."); //code 404
                 }
 
-                var speciesDTOs = species.Select(s => new SpeciesDTO(s)).ToList();
+                var speciesDTOs = species.Select(s => new SpeciesGetDTO(s)).ToList();
 
                 return Ok(speciesDTOs);
             }
@@ -130,7 +130,7 @@ namespace Pet_Store_Api.Controllers
                     return NotFound("Animals not found."); //code 404
                 }
 
-                var animalsDTOs = animals.Select(a => new AnimalDTO(a)).ToList();
+                var animalsDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
 
                 return Ok(animalsDTOs);
             }
@@ -159,7 +159,7 @@ namespace Pet_Store_Api.Controllers
                 // Initialize return DTO
                 StockDTO stockDTO = new StockDTO
                 {
-                    storeDTO = new StoreDTO(store),
+                    storeGetDTO = new StoreGetDTO(store),
                     SpeciesStocks = []
 
                 };
@@ -169,7 +169,7 @@ namespace Pet_Store_Api.Controllers
                 {
                     SpeciesStockDTO speciesStockDTO = new SpeciesStockDTO
                     {
-                        speciesDTO = new SpeciesDTO(stock.Key),
+                        speciesGetDTO = new SpeciesGetDTO(stock.Key),
                         AnimalsAmount = stock.Value,
                     };
                     stockDTO.SpeciesStocks.Add(speciesStockDTO);
@@ -212,17 +212,18 @@ namespace Pet_Store_Api.Controllers
         // POST: api/Stores
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Store>> PostStore(Store store)
+        public async Task<ActionResult<Store>> PostStore(StorePostDTO storePostDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState); //code 400
-            }
-
             // TODO: check if resource already exists //code 409
 
             try
             {
+                Store store = new Store
+                {
+                    Name = storePostDTO.Name,
+                    Location = storePostDTO.Location
+                };
+
                 _storeRepository.InsertStore(store);
                 await _storeRepository.Save();
 

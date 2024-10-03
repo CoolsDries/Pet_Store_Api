@@ -1,4 +1,6 @@
-﻿namespace Pet_Store_Api.Models
+﻿using Pet_Store_Api.DTOs;
+
+namespace Pet_Store_Api.Models
 {
     public interface IAnimalRepository:IDisposable
     {
@@ -7,7 +9,7 @@
         Task<IEnumerable<Animal>> GetAnimalsByStoreId(int storeId);
         Task<IEnumerable<Animal>> GetAnimalsBySpieciesId(int speciesId);
         Task<IEnumerable<Animal>> GetAnimalsByStoreIdAndSpieciesId(int storeId, int speciesId);
-        void InsertAnimal(Animal animal);
+        Task InsertAnimal(AnimalPostDTO animalPostDTO);
         void DeleteAnimal(int id);
         void UpdateAnimal(Animal animal);
         Task Save();

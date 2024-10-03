@@ -32,7 +32,7 @@ namespace Pet_Store_Api.Controllers
                     return NotFound("Species not found."); //code 404
                 }
 
-                var speciesDTOs = species.Select(s => new SpeciesDTO(s)).ToList();
+                var speciesDTOs = species.Select(s => new SpeciesGetDTO(s)).ToList();
 
                 return Ok(speciesDTOs);
             }
@@ -51,7 +51,7 @@ namespace Pet_Store_Api.Controllers
                 // If species exist, returns that species
                 var species = await CheckIfSpeciesExist(id);
 
-                return Ok(new SpeciesDTO(species));
+                return Ok(new SpeciesGetDTO(species));
             }
             catch (Exception)
             {
@@ -74,7 +74,7 @@ namespace Pet_Store_Api.Controllers
                     return NotFound("Animals not found."); //code 404
                 }
 
-                var animalDTOs = animals.Select(a => new AnimalDTO(a)).ToList();
+                var animalDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
 
                 return Ok(animalDTOs);
             }
@@ -112,17 +112,19 @@ namespace Pet_Store_Api.Controllers
         // POST: api/Species
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Species>> PostSpecies(Species species)
+        public async Task<ActionResult<Species>> PostSpecies(SpeciesPostDTO speciesPostDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState); //code 400
-            }
-
             // TODO: check if resource already exists //code 409
 
             try
             {
+                Species species = new Species 
+                {
+                    Name = speciesPostDTO.Name,
+                    BasePrice = speciesPostDTO.BasePrice,
+                    Description = speciesPostDTO.Description
+                };
+
                 _speciesRepository.InsertSpecies(species);
                 await _speciesRepository.Save();
 

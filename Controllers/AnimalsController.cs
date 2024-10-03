@@ -6,6 +6,7 @@ using Pet_Store_Api.Models;
 namespace Pet_Store_Api.Controllers
 {
     [Route("api/[controller]")]
+    // ApiController will automatically apply model validation rules
     [ApiController]
     public class AnimalsController : ControllerBase
     {
@@ -33,7 +34,7 @@ namespace Pet_Store_Api.Controllers
                     return NotFound("Animals not found."); //code 404
                 }
 
-                var animalDTOs = animals.Select(a => new AnimalDTO(a)).ToList();
+                var animalDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
 
                 return Ok(animalDTOs);
             }
@@ -52,7 +53,7 @@ namespace Pet_Store_Api.Controllers
                 // If Animal exist, methode CheckIfAnimalExist returns the animal
                 var animal = await CheckIfAnimalExist(id);
 
-                return Ok(new AnimalDTO(animal));
+                return Ok(new AnimalGetDTO(animal));
             }
             catch (Exception)
             {
@@ -88,18 +89,16 @@ namespace Pet_Store_Api.Controllers
         // POST: api/Animals
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Animal>> PostAnimal(Animal animal)
+        public async Task<ActionResult<Animal>> PostAnimal(AnimalPostDTO animalPostDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState); //code 400
-            }
-
             // TODO: check if resource already exists //code 409
 
             try
             {
-                _animalRepository.UpdateAnimal(animal);
+
+                // TODO: Better way to keep DTO in controller layer or is this oke?
+                // Problem: Animal requires Store and Species in constructor
+                await _animalRepository.InsertAnimal(animalPostDTO);
                 await _animalRepository.Save();
 
                 return Created(); //code 201
