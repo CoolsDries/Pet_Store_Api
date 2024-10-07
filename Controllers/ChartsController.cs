@@ -7,11 +7,11 @@ namespace Pet_Store_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ChartController : Controller
+    public class ChartsController : Controller
     {
         private readonly IChartService _chartService;
 
-        public ChartController(IChartService chartService)
+        public ChartsController(IChartService chartService)
         {
             _chartService = chartService;
         }
