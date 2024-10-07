@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
+using Pet_Store_Api.Models.Interfaces;
 
 namespace Pet_Store_Api.Controllers
 {
@@ -140,37 +141,91 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // GET: api/{id}/Stock
-        // TODO: Swagger documentation
-        [HttpGet("{id}/Stock")]
-        public async Task<IActionResult> GetStoreStock(int id)
+        //// GET: api/{id}/Stock
+        //// TODO: Swagger documentation
+        //[HttpGet("{id}/Stock")]
+        //public async Task<IActionResult> GetStoreStock(int id)
+        //{
+        //    // Question: What is the best way to implement stock info?
+        //    try
+        //    {
+        //        var store = await CheckIfStoreExist(id);
+
+        //        var storeStock =  await _storeRepository.GetStoreStock(id);
+
+        //        if (!storeStock.Any())
+        //        {
+        //            return NotFound("No stock found for this store.");
+        //        }
+
+        //        // Initialize return DTO
+        //        StockDTO stockDTO = new StockDTO
+        //        {
+        //            StoreName = store.Name,
+        //            SpeciesStocks = []
+
+        //        };
+
+        //        // Add foreach species a speciesstockDTO to the stockDTO
+        //        foreach (var stock in storeStock)
+        //        {
+        //            SpeciesStockDTO speciesStockDTO = new SpeciesStockDTO
+        //            {
+        //                SpeciesName = stock.Key,
+        //                AnimalsAmount = stock.Value,
+        //            };
+        //            stockDTO.SpeciesStocks.Add(speciesStockDTO);
+        //        }
+
+        //        return Ok(stockDTO);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+           
+        //}
+
+        // GET: api/[id]/Stock
+        // TODO: logic needs to be in a service
+        // TODO: single store id function is not nessesary anymore?
+        [HttpGet("Stock")]
+        public async Task<IActionResult> GetStoresStock([FromQuery] int[] ids)
         {
-            // Question: What is the best way to implement stock info?
             try
             {
-                var store = await CheckIfStoreExist(id);
-
-                var storeStock =  await _storeRepository.GetStoreStock(id);
-
-                if (!storeStock.Any())
+                if (ids.IsNullOrEmpty())
                 {
-                    return NotFound("No stock found for this store.");
+                    return NotFound("Stores not found."); //code 404
+                }
+
+                List<String> storeNames = [];
+                foreach (var id in ids)
+                {
+                    var store = await CheckIfStoreExist(id);
+                    storeNames.Add(store.Name);
+                }
+
+                var storesStock = await _storeRepository.GetStoresStock(ids);
+                if (storesStock.IsNullOrEmpty())
+                {
+                    return NotFound("Stores stock not found."); //code 404
                 }
 
                 // Initialize return DTO
                 StockDTO stockDTO = new StockDTO
                 {
-                    storeGetDTO = new StoreGetDTO(store),
+                    StoreName = String.Join(", ", [.. storeNames]),
                     SpeciesStocks = []
 
                 };
 
                 // Add foreach species a speciesstockDTO to the stockDTO
-                foreach (var stock in storeStock)
+                foreach (var stock in storesStock)
                 {
                     SpeciesStockDTO speciesStockDTO = new SpeciesStockDTO
                     {
-                        speciesGetDTO = new SpeciesGetDTO(stock.Key),
+                        SpeciesName = stock.Key,
                         AnimalsAmount = stock.Value,
                     };
                     stockDTO.SpeciesStocks.Add(speciesStockDTO);
@@ -182,7 +237,6 @@ namespace Pet_Store_Api.Controllers
             {
                 throw;
             }
-           
         }
 
         // PUT: api/Stores/{id}

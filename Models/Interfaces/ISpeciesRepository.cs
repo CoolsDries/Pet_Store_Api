@@ -1,6 +1,6 @@
-﻿namespace Pet_Store_Api.Models
+﻿namespace Pet_Store_Api.Models.Interfaces
 {
-    public interface ISpeciesRepository:IDisposable
+    public interface ISpeciesRepository : IDisposable
     {
         Task<Species?> GetSpeciesById(int id);
         Task<IEnumerable<Species>> GetSpeciesByStoreId(int storeId);

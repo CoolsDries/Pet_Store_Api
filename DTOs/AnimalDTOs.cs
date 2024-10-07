@@ -26,4 +26,21 @@ namespace Pet_Store_Api.DTOs
         public int StoreId { get; set; }
         public int SpeciesId { get; set; }
     }
+
+    static class AnimalDTOMapper
+    {
+        public static Animal AnimalPostDTO_to_Animal(AnimalPostDTO animalPostDTO)
+        {
+            return new Animal
+            {
+                SpeciesId = animalPostDTO.SpeciesId,
+                Species = null,
+                StoreId = animalPostDTO.StoreId,
+                Store = null,
+                Name = animalPostDTO.Name,
+                Price = animalPostDTO.Price,
+                Discription = animalPostDTO.Discription
+            };
+        }
+    }
 }

@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
+using Pet_Store_Api.Models.Interfaces;
 
 namespace Pet_Store_Api.Controllers
 {

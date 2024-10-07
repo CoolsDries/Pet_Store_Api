@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Pet_Store_Api.Data;
 using Pet_Store_Api.Models;
+using Pet_Store_Api.Models.Interfaces;
 
-namespace Pet_Store_Api.Data.Repositories
+namespace Pet_Store_Api.Repositories
 {
     public class SpeciesRepository : ISpeciesRepository, IDisposable
     {
@@ -37,7 +39,7 @@ namespace Pet_Store_Api.Data.Repositories
 
         public void InsertSpecies(Species species)
         {
-            _context.Species.Add(species);  
+            _context.Species.Add(species);
         }
 
         public void UpdateSpecies(Species species)

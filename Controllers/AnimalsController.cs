@@ -2,6 +2,8 @@
 using Microsoft.IdentityModel.Tokens;
 using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
+using Pet_Store_Api.Models.Interfaces;
+using Pet_Store_Api.Repositories;
 
 // TODO, Question: Add and implement a Service Layer
 // Controller -> Service -> Repository
@@ -15,12 +17,13 @@ namespace Pet_Store_Api.Controllers
     [ApiController]
     public class AnimalsController : ControllerBase
     {
-        private readonly IAnimalRepository _animalRepository;
+        private readonly IAnimalService _animalService;
 
+        // Error handeling in Service
         // id in AnimalsController always references animalId
-        public AnimalsController(IAnimalRepository animalRepository)
+        public AnimalsController(IAnimalService animalService)
         {
-            _animalRepository = animalRepository;
+            _animalService = animalService;
         }
 
         // TODO: order queries
@@ -32,13 +35,9 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                var animals = await _animalRepository.GetAnimals();
+                var animals = await _animalService.GetAnimals();
 
-                if (animals.IsNullOrEmpty())
-                {
-                    return NotFound("Animals not found."); //code 404
-                }
-
+                // Convert to DTO to control outgoing data
                 var animalDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
 
                 return Ok(animalDTOs);
@@ -55,35 +54,9 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                // If Animal exist, methode CheckIfAnimalExist returns the animal
-                var animal = await CheckIfAnimalExist(id);
-
+                var animal = await _animalService.GetAnimalById(id);
+                
                 return Ok(new AnimalGetDTO(animal));
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        // PUT: api/Animals/{id}
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAnimal(int id, Animal animal)
-        {
-            try
-            {
-                if (id != animal.Id)
-                {
-                    return BadRequest("Id does not match animal.Id"); //code 400
-                }
-
-                await CheckIfAnimalExist(id);
-
-                _animalRepository.UpdateAnimal(animal);
-                await _animalRepository.Save();
-
-                return Ok(); //code 200
             }
             catch (Exception)
             {
@@ -96,15 +69,11 @@ namespace Pet_Store_Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Animal>> PostAnimal(AnimalPostDTO animalPostDTO)
         {
-            // TODO: check if resource already exists //code 409
-
             try
             {
+                var animal = AnimalDTOMapper.AnimalPostDTO_to_Animal(animalPostDTO);
 
-                // TODO: Better way to keep DTO in controller layer or is this oke?
-                // Question ,Problem: Animal requires Store and Species in constructor
-                await _animalRepository.InsertAnimal(animalPostDTO);
-                await _animalRepository.Save();
+                await _animalService.InsertAnimal(animal);
 
                 return Created(); //code 201
             }
@@ -120,10 +89,7 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                await CheckIfAnimalExist(id);
-
-                _animalRepository.DeleteAnimal(id);
-                await _animalRepository.Save();
+                await _animalService.DeleteAnimal(id);
 
                 return Ok(); //code 200
             }
@@ -133,17 +99,22 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // Check if speices exist and returns species, if not throw not found exception.
-        private async Task<Animal> CheckIfAnimalExist(int id)
+        // PUT: api/Animals/{id}
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutAnimal(int id, Animal animal)
         {
-            var animal = await _animalRepository.GetAnimalById(id);
-
-            if (animal == null)
+            try
             {
-                throw new NotFoundException($"Animal with ID {id} not found.");
-            }
+                await _animalService.UpdateAnimal(id, animal);
 
-            return animal;
+                return Ok(); //code 200
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
+
     }
 }

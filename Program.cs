@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Pet_Store_Api.Data;
-using Pet_Store_Api.Data.Repositories;
-using Pet_Store_Api.Models;
+using Pet_Store_Api.Models.Interfaces;
+using Pet_Store_Api.Repositories;
+using Pet_Store_Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<DataInitializer>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 builder.Services.AddScoped<ISpeciesRepository, SpeciesRepository>();
+
 builder.Services.AddScoped<IAnimalRepository, AnimalRepository>();
+builder.Services.AddScoped<IAnimalService, AnimalService>();
 
 var app = builder.Build();
 

@@ -1,14 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore; //Supports LINQ
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore; //Supports LINQ
+using Pet_Store_Api.Data;
+using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
+using Pet_Store_Api.Models.Interfaces;
 
-namespace Pet_Store_Api.Data.Repositories
+namespace Pet_Store_Api.Repositories
 {
     public class StoreRepository : IStoreRepository, IDisposable
     {
         private readonly PetStoreContext _context;
         private bool disposedValue;
 
-        public StoreRepository(PetStoreContext context) 
+        public StoreRepository(PetStoreContext context)
         {
             _context = context;
         }
@@ -36,14 +40,30 @@ namespace Pet_Store_Api.Data.Repositories
             return await _context.Stores.ToListAsync();
         }
 
-        // Done in Repository and not in Domain model, because of Domain limitations.
-        public async Task<IDictionary<Species, int>> GetStoreStock(int id)
+        //// Done in Repository and not in Domain model, because of Domain limitations.
+        //public async Task<IDictionary<string, int>> GetStoreStock(int id)
+        //{
+        //    // Get all animals from store and group by species and then include species object
+        //    var animals = await _context.Animals
+        //        .Where(a => a.StoreId == id)
+        //        .Include(a => a.Species)
+        //        .GroupBy(a => a.Species)
+        //        .ToListAsync();
+
+        //    // map to dictionary
+        //    var storeStock = animals.ToDictionary(a => a.Key.Name, a => a.Count());
+
+        //    return storeStock;
+        //}
+
+        // TODO: Merge methode GetStoreStock & GetStoresStock?
+        public async Task<IDictionary<string, int>> GetStoresStock(int[] ids)
         {
             // Get all animals from store and group by species and then include species object
             var animals = await _context.Animals
-                .Where(a => a.StoreId == id)
+                .Where(a => ids.Contains(a.StoreId))
                 .Include(a => a.Species)
-                .GroupBy(a => a.Species)
+                .GroupBy(a => a.Species.Name)
                 .ToListAsync();
 
             // map to dictionary
@@ -61,7 +81,7 @@ namespace Pet_Store_Api.Data.Repositories
 
         public void DeleteStore(int id)
         {
-             _context.Stores.Where(s => s.Id == id).ExecuteDelete();
+            _context.Stores.Where(s => s.Id == id).ExecuteDelete();
         }
 
         public void UpdateStore(Store store)
