@@ -6,13 +6,10 @@ namespace Pet_Store_Api.Models.Interfaces
     {
         Task<IEnumerable<Store>> GetStores();
         Task<Store?> GetStoreById(int id);
+        Task<IDictionary<string, int>> GetSpeciesAmountFromStores(int[] ids);
         void InsertStore(Store store);
         void DeleteStore(int id);
         void UpdateStore(Store store);
         Task Save();
-
-        // Not using methods unitl neccesary
-        ////Task<IDictionary<string, int>> GetStoreStock(int id);
-        //Task<IDictionary<string, int>> GetStoresStock(int[] ids);
     }
 }

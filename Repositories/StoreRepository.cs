@@ -32,6 +32,20 @@ namespace Pet_Store_Api.Repositories
             return await _context.Stores.Include(s => s.Animals).FirstOrDefaultAsync(s => s.Id == id);
         }
 
+        // Species count = Ammount of animals per species 
+        public async Task<IDictionary<string, int>> GetSpeciesAmountFromStores(int[] ids)
+        {
+            // Get all animals from stores and group by species
+            var animals = await _context.Animals
+                .Where(a => ids.Contains(a.StoreId))
+                .Include(a => a.Species)
+                .GroupBy(a => a.Species.Name)
+                .ToListAsync();
+
+            // map to dictionary {key: species name, value: amount}
+            return animals.ToDictionary(a => a.Key, a => a.Count());
+        }
+
         // Insert, Delete and Update, don't need to be async.
         // Changes to the database only occur when SaveChanges is called.
         public void InsertStore(Store store)
@@ -77,38 +91,5 @@ namespace Pet_Store_Api.Repositories
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-
-        // Not using methods unitl neccesary
-        ////// Done in Repository and not in Domain model, because of Domain limitations.
-        ////public async Task<IDictionary<string, int>> GetStoreStock(int id)
-        ////{
-        ////    // Get all animals from store and group by species and then include species object
-        ////    var animals = await _context.Animals
-        ////        .Where(a => a.StoreId == id)
-        ////        .Include(a => a.Species)
-        ////        .GroupBy(a => a.Species)
-        ////        .ToListAsync();
-
-        ////    // map to dictionary
-        ////    var storeStock = animals.ToDictionary(a => a.Key.Name, a => a.Count());
-
-        ////    return storeStock;
-        ////}
-
-        //// TODO: Merge methode GetStoreStock & GetStoresStock?
-        //public async Task<IDictionary<string, int>> GetStoresStock(int[] ids)
-        //{
-        //    // Get all animals from store and group by species and then include species object
-        //    var animals = await _context.Animals
-        //        .Where(a => ids.Contains(a.StoreId))
-        //        .Include(a => a.Species)
-        //        .GroupBy(a => a.Species.Name)
-        //        .ToListAsync();
-
-        //    // map to dictionary
-        //    var storeStock = animals.ToDictionary(a => a.Key, a => a.Count());
-
-        //    return storeStock;
-        //}
     }
 }

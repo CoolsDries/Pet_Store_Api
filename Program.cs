@@ -32,10 +32,15 @@ builder.Services.AddSwaggerGen();
 // Dependency injection 
 builder.Services.AddScoped<DataInitializer>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
+builder.Services.AddScoped<IStoreService, StoreService>();
+
 builder.Services.AddScoped<ISpeciesRepository, SpeciesRepository>();
+builder.Services.AddScoped<ISpeciesService, SpeciesService>();
 
 builder.Services.AddScoped<IAnimalRepository, AnimalRepository>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
+
+builder.Services.AddScoped<IChartService, ChartService>();
 
 var app = builder.Build();
 
