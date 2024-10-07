@@ -7,6 +7,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+// Set CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()    // Allow all http methods (GET, POST, etc.)
+                   .AllowAnyHeader();
+        });
+});
+
 builder.Services.AddControllers();
 // Datbase connection
 // DefaultConnection located in appsettings.json
@@ -39,6 +51,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // Use CORS policy
+    // Only in development, not safe for production
+    app.UseCors("AllowAllOrigins");
 }
 
 app.UseHttpsRedirection();

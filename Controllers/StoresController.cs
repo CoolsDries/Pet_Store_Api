@@ -7,14 +7,14 @@ namespace Pet_Store_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StoreController : ControllerBase
+    public class StoresController : ControllerBase
     {
         private readonly IStoreRepository _storeRepository;
         private readonly IAnimalRepository _animalRepository;
         private readonly ISpeciesRepository _speciesRepository;
 
         // id in StoreController always references storeId
-        public StoreController(IStoreRepository storeRepository, IAnimalRepository animalRepository, ISpeciesRepository speciesRepository)
+        public StoresController(IStoreRepository storeRepository, IAnimalRepository animalRepository, ISpeciesRepository speciesRepository)
         {
             _storeRepository = storeRepository;
             _animalRepository = animalRepository;
@@ -140,7 +140,7 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // GET: api/Stock
+        // GET: api/{id}/Stock
         // TODO: Swagger documentation
         [HttpGet("{id}/Stock")]
         public async Task<IActionResult> GetStoreStock(int id)
