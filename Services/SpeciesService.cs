@@ -8,12 +8,10 @@ namespace Pet_Store_Api.Services
     public class SpeciesService : ISpeciesService
     {
         private readonly ISpeciesRepository _speciesRepository;
-        private readonly IAnimalRepository _animalRepository;
 
-        public SpeciesService(ISpeciesRepository speciesRepository, IAnimalRepository animalRepository)
+        public SpeciesService(ISpeciesRepository speciesRepository)
         {
             _speciesRepository = speciesRepository;
-            _animalRepository = animalRepository;
         }
 
         public async Task<IEnumerable<Species>> GetSpecies()

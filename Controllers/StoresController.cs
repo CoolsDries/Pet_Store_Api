@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
 using Pet_Store_Api.Models.Interfaces;
@@ -10,16 +9,12 @@ namespace Pet_Store_Api.Controllers
     [ApiController]
     public class StoresController : ControllerBase
     {
-        private readonly IStoreRepository _storeRepository;
-        private readonly IAnimalRepository _animalRepository;
-        private readonly ISpeciesRepository _speciesRepository;
+        private readonly IStoreService _storeService;
 
         // id in StoreController always references storeId
-        public StoresController(IStoreRepository storeRepository, IAnimalRepository animalRepository, ISpeciesRepository speciesRepository)
+        public StoresController(IStoreService storeService)
         {
-            _storeRepository = storeRepository;
-            _animalRepository = animalRepository;
-            _speciesRepository = speciesRepository;
+            _storeService = storeService;
         }
 
         // GET: api/Stores
@@ -28,12 +23,7 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                var stores = await _storeRepository.GetStores();
-
-                if (stores.IsNullOrEmpty())
-                {
-                    return NotFound("Stores not found."); //code 404
-                }
+                var stores = await _storeService.GetStores();
 
                 var storeGetDTOs = stores.Select(s => new StoreGetDTO(s)).ToList();
 
@@ -51,7 +41,7 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                var store = await CheckIfStoreExist(id);
+                var store = await _storeService.GetStoreById(id);
 
                 return Ok(new StoreGetDTO(store));
             }
@@ -61,25 +51,18 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // GET: api/Stores/{id}/Animals
-        [HttpGet("{id}/Animals")]
-        public async Task<IActionResult> GetStoreAnimals(int id)
+        // POST: api/Stores
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<Store>> PostStore(StorePostDTO storePostDTO)
         {
             try
             {
-                await CheckIfStoreExist(id);
+                var store = StoreDTOMapper.StorePostDTO_to_Store(storePostDTO);
 
-                // Not via store.include() because we will need store info and animals seperatly.
-                var animals = await _animalRepository.GetAnimalsByStoreId(id);
+                await _storeService.InsertStore(store);
 
-                if (animals.IsNullOrEmpty())
-                {
-                    return NotFound("Animals not found."); //code 404
-                }
-
-                var animalsDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
-
-                return Ok(animalsDTOs);
+                return Created(); //code 201
             }
             catch (Exception)
             {
@@ -87,24 +70,15 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // GET: api/Stores/{id}/Species
-        [HttpGet("{id}/Species")]
-        public async Task<IActionResult> GetStoreSpecies(int id)
+        // DELETE: api/Stores/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteStore(int id)
         {
             try
             {
-                await CheckIfStoreExist(id);
+                await _storeService.DeleteStore(id);
 
-                var species = await _speciesRepository.GetSpeciesByStoreId(id);
-
-                if (species.IsNullOrEmpty())
-                {
-                    return NotFound("Species not found."); //code 404
-                }
-
-                var speciesDTOs = species.Select(s => new SpeciesGetDTO(s)).ToList();
-
-                return Ok(speciesDTOs);
+                return Ok(); //code 200
             }
             catch (Exception)
             {
@@ -112,35 +86,23 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // GET: api/Stores/{id}/Species/{speciesId}/Animals
-        [HttpGet("{id}/Species/{speciesId}/Animals")]
-        public async Task<IActionResult> GetStoreAnimalsBySpecies(int id, int speciesId)
+        // PUT: api/Stores/{id}
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutStore(int id, Store store)
         {
             try
             {
-                await CheckIfStoreExist(id);
+                await _storeService.UpdateStore(id, store);
 
-                await CheckIfSpeciesExist(id);
-
-                // TODO: Check if store contains species
-
-                var animals = await _animalRepository.GetAnimalsByStoreIdAndSpieciesId(id, speciesId);
-
-                if (animals.IsNullOrEmpty())
-                {
-                    return NotFound("Animals not found."); //code 404
-                }
-
-                var animalsDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
-
-                return Ok(animalsDTOs);
+                return Ok(); //code 200
             }
             catch (Exception)
             {
                 throw;
             }
         }
-
+        // Not using methods unitl neccesary
         //// GET: api/{id}/Stock
         //// TODO: Swagger documentation
         //[HttpGet("{id}/Stock")]
@@ -183,156 +145,141 @@ namespace Pet_Store_Api.Controllers
         //    {
         //        throw;
         //    }
-           
+
         //}
 
         // GET: api/[id]/Stock
         // TODO: logic needs to be in a service
         // TODO: single store id function is not nessesary anymore?
-        [HttpGet("Stock")]
-        public async Task<IActionResult> GetStoresStock([FromQuery] int[] ids)
-        {
-            try
-            {
-                if (ids.IsNullOrEmpty())
-                {
-                    return NotFound("Stores not found."); //code 404
-                }
+        //[HttpGet("Stock")]
+        //public async Task<IActionResult> GetStoresStock([FromQuery] int[] ids)
+        //{
+        //    try
+        //    {
+        //        if (ids.IsNullOrEmpty())
+        //        {
+        //            return NotFound("Stores not found."); //code 404
+        //        }
 
-                List<String> storeNames = [];
-                foreach (var id in ids)
-                {
-                    var store = await CheckIfStoreExist(id);
-                    storeNames.Add(store.Name);
-                }
+        //        List<String> storeNames = [];
+        //        foreach (var id in ids)
+        //        {
+        //            var store = await CheckIfStoreExist(id);
+        //            storeNames.Add(store.Name);
+        //        }
 
-                var storesStock = await _storeRepository.GetStoresStock(ids);
-                if (storesStock.IsNullOrEmpty())
-                {
-                    return NotFound("Stores stock not found."); //code 404
-                }
+        //        var storesStock = await _storeRepository.GetStoresStock(ids);
+        //        if (storesStock.IsNullOrEmpty())
+        //        {
+        //            return NotFound("Stores stock not found."); //code 404
+        //        }
 
-                // Initialize return DTO
-                StockDTO stockDTO = new StockDTO
-                {
-                    StoreName = String.Join(", ", [.. storeNames]),
-                    SpeciesStocks = []
+        //        // Initialize return DTO
+        //        StockDTO stockDTO = new StockDTO
+        //        {
+        //            StoreName = String.Join(", ", [.. storeNames]),
+        //            SpeciesStocks = []
 
-                };
+        //        };
 
-                // Add foreach species a speciesstockDTO to the stockDTO
-                foreach (var stock in storesStock)
-                {
-                    SpeciesStockDTO speciesStockDTO = new SpeciesStockDTO
-                    {
-                        SpeciesName = stock.Key,
-                        AnimalsAmount = stock.Value,
-                    };
-                    stockDTO.SpeciesStocks.Add(speciesStockDTO);
-                }
+        //        // Add foreach species a speciesstockDTO to the stockDTO
+        //        foreach (var stock in storesStock)
+        //        {
+        //            SpeciesStockDTO speciesStockDTO = new SpeciesStockDTO
+        //            {
+        //                SpeciesName = stock.Key,
+        //                AnimalsAmount = stock.Value,
+        //            };
+        //            stockDTO.SpeciesStocks.Add(speciesStockDTO);
+        //        }
 
-                return Ok(stockDTO);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+        //        return Ok(stockDTO);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
 
-        // PUT: api/Stores/{id}
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutStore(int id, Store store)
-        {
-            try
-            {
-                if (id != store.Id)
-                {
-                    return BadRequest("Id does not match store.Id"); //code 400
-                }
+        //// GET: api/Stores/{id}/Animals
+        //[HttpGet("{id}/Animals")]
+        //public async Task<IActionResult> GetStoreAnimals(int id)
+        //{
+        //    try
+        //    {
+        //        await CheckIfStoreExist(id);
 
-                await CheckIfStoreExist(id);
+        //        // Not via store.include() because we will need store info and animals seperatly.
+        //        var animals = await _animalRepository.GetAnimalsByStoreId(id);
 
-                _storeRepository.UpdateStore(store);
-                await _storeRepository.Save();
+        //        if (animals.IsNullOrEmpty())
+        //        {
+        //            return NotFound("Animals not found."); //code 404
+        //        }
 
-                return Ok(); //code 200
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+        //        var animalsDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
 
-        // POST: api/Stores
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Store>> PostStore(StorePostDTO storePostDTO)
-        {
-            // TODO: check if resource already exists //code 409
+        //        return Ok(animalsDTOs);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
 
-            try
-            {
-                Store store = new Store
-                {
-                    Name = storePostDTO.Name,
-                    Location = storePostDTO.Location
-                };
+        //// GET: api/Stores/{id}/Species
+        //[HttpGet("{id}/Species")]
+        //public async Task<IActionResult> GetStoreSpecies(int id)
+        //{
+        //    try
+        //    {
+        //        await CheckIfStoreExist(id);
 
-                _storeRepository.InsertStore(store);
-                await _storeRepository.Save();
+        //        var species = await _speciesRepository.GetSpeciesByStoreId(id);
 
-                return Created(); //code 201
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+        //        if (species.IsNullOrEmpty())
+        //        {
+        //            return NotFound("Species not found."); //code 404
+        //        }
 
-        // DELETE: api/Stores/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStore(int id)
-        {
-            try
-            {
-                await CheckIfStoreExist(id);
+        //        var speciesDTOs = species.Select(s => new SpeciesGetDTO(s)).ToList();
 
-                _storeRepository.DeleteStore(id);
-                await _storeRepository.Save();
+        //        return Ok(speciesDTOs);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
 
-                return Ok(); //code 200
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+        //// GET: api/Stores/{id}/Species/{speciesId}/Animals
+        //[HttpGet("{id}/Species/{speciesId}/Animals")]
+        //public async Task<IActionResult> GetStoreAnimalsBySpecies(int id, int speciesId)
+        //{
+        //    try
+        //    {
+        //        await CheckIfStoreExist(id);
 
-        // Check if store exist and returns store, if not throw not found exception.
-        private async Task<Store> CheckIfStoreExist(int id)
-        {
-            var store = await _storeRepository.GetStoreById(id);
+        //        await CheckIfSpeciesExist(id);
 
-            if (store == null)
-            {
-                throw new NotFoundException($"Store with ID {id} not found.");
-            }
+        //        // TODO: Check if store contains species
 
-            return store;
-        }
+        //        var animals = await _animalRepository.GetAnimalsByStoreIdAndSpieciesId(id, speciesId);
 
-        // Check if speices exist and returns species, if not throw not found exception.
-        private async Task<Species> CheckIfSpeciesExist(int id)
-        {
-            var species = await _speciesRepository.GetSpeciesById(id);
+        //        if (animals.IsNullOrEmpty())
+        //        {
+        //            return NotFound("Animals not found."); //code 404
+        //        }
 
-            if (species == null)
-            {
-                throw new NotFoundException($"Species with ID {id} not found.");
-            }
+        //        var animalsDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
 
-            return species;
-        }
+        //        return Ok(animalsDTOs);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
+
     }
 }

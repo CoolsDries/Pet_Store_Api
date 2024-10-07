@@ -24,4 +24,16 @@ namespace Pet_Store_Api.DTOs
         public string? Location { get; set; }
     }
 
+    static class StoreDTOMapper
+    {
+        public static Store StorePostDTO_to_Store(StorePostDTO storePostDTO)
+        {
+            return new Store
+            {
+                Name = storePostDTO.Name,
+                Location = storePostDTO.Location
+            };
+        }
+    }
+
 }

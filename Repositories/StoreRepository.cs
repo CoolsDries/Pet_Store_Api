@@ -17,59 +17,19 @@ namespace Pet_Store_Api.Repositories
             _context = context;
         }
 
-        public async Task<Store?> GetStoreById(int id)
-        {
-            // TODO: Using Select and converting directly into DTO
-            // So you can controll wich colums are used
-            // Question: DTO management in repo or controller (read conflicting things)
-            //StoreGetDTO storeGetDTO = await _context.Stores
-            //    .Select(s => new StoreGetDTO
-            //    {
-            //        Id = s.Id,
-            //        Name = s.Name,
-            //        Location = s.Location,
-            //    })
-            //    .FirstOrDefaultAsync(s => s.Id == id);
-
-            return await _context.Stores.Include(s => s.Animals).FirstOrDefaultAsync(s => s.Id == id);
-        }
-
         public async Task<IEnumerable<Store>> GetStores()
         {
             // .Include(s => s.Animals)
             return await _context.Stores.ToListAsync();
         }
 
-        //// Done in Repository and not in Domain model, because of Domain limitations.
-        //public async Task<IDictionary<string, int>> GetStoreStock(int id)
-        //{
-        //    // Get all animals from store and group by species and then include species object
-        //    var animals = await _context.Animals
-        //        .Where(a => a.StoreId == id)
-        //        .Include(a => a.Species)
-        //        .GroupBy(a => a.Species)
-        //        .ToListAsync();
-
-        //    // map to dictionary
-        //    var storeStock = animals.ToDictionary(a => a.Key.Name, a => a.Count());
-
-        //    return storeStock;
-        //}
-
-        // TODO: Merge methode GetStoreStock & GetStoresStock?
-        public async Task<IDictionary<string, int>> GetStoresStock(int[] ids)
+        public async Task<Store?> GetStoreById(int id)
         {
-            // Get all animals from store and group by species and then include species object
-            var animals = await _context.Animals
-                .Where(a => ids.Contains(a.StoreId))
-                .Include(a => a.Species)
-                .GroupBy(a => a.Species.Name)
-                .ToListAsync();
-
-            // map to dictionary
-            var storeStock = animals.ToDictionary(a => a.Key, a => a.Count());
-
-            return storeStock;
+            // TODO: Using Select and converting directly into DTO
+            // So you can controll wich colums are used
+            // Question: DTO management in repo or controller (read conflicting things)
+            // --> Using models as long as possible, only convert in controller
+            return await _context.Stores.Include(s => s.Animals).FirstOrDefaultAsync(s => s.Id == id);
         }
 
         // Insert, Delete and Update, don't need to be async.
@@ -117,5 +77,38 @@ namespace Pet_Store_Api.Repositories
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        // Not using methods unitl neccesary
+        ////// Done in Repository and not in Domain model, because of Domain limitations.
+        ////public async Task<IDictionary<string, int>> GetStoreStock(int id)
+        ////{
+        ////    // Get all animals from store and group by species and then include species object
+        ////    var animals = await _context.Animals
+        ////        .Where(a => a.StoreId == id)
+        ////        .Include(a => a.Species)
+        ////        .GroupBy(a => a.Species)
+        ////        .ToListAsync();
+
+        ////    // map to dictionary
+        ////    var storeStock = animals.ToDictionary(a => a.Key.Name, a => a.Count());
+
+        ////    return storeStock;
+        ////}
+
+        //// TODO: Merge methode GetStoreStock & GetStoresStock?
+        //public async Task<IDictionary<string, int>> GetStoresStock(int[] ids)
+        //{
+        //    // Get all animals from store and group by species and then include species object
+        //    var animals = await _context.Animals
+        //        .Where(a => ids.Contains(a.StoreId))
+        //        .Include(a => a.Species)
+        //        .GroupBy(a => a.Species.Name)
+        //        .ToListAsync();
+
+        //    // map to dictionary
+        //    var storeStock = animals.ToDictionary(a => a.Key, a => a.Count());
+
+        //    return storeStock;
+        //}
     }
 }
