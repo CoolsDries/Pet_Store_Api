@@ -25,31 +25,19 @@ namespace Pet_Store_Api.Repositories
             return await _context.Species.FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public async Task<IEnumerable<Species>> GetSpeciesByStoreId(int storeId)
-        {
-            // Getting store by id and including the animals list
-            var store = await _context.Stores.Include(s => s.Animals).ThenInclude(a => a.Species).FirstOrDefaultAsync(s => s.Id == storeId);
-
-            // Mapping The animals to theire species and keep unique species
-            // Warning checks are not nessecary, they are already check in the controller
-            var storeSpecies = store.Animals.Select(a => a.Species);
-
-            return storeSpecies.Distinct();
-        }
-
         public void InsertSpecies(Species species)
         {
             _context.Species.Add(species);
         }
 
-        public void UpdateSpecies(Species species)
-        {
-            _context.Species.Update(species);
-        }
-
         public void DeleteSpecies(int id)
         {
             _context.Species.Where(s => s.Id == id).ExecuteDelete();
+        }
+
+        public void UpdateSpecies(Species species)
+        {
+            _context.Species.Update(species);
         }
 
         public async Task Save()
@@ -79,5 +67,18 @@ namespace Pet_Store_Api.Repositories
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        // Not using methods unitl neccesary
+        //public async Task<IEnumerable<Species>> GetSpeciesByStoreId(int storeId)
+        //{
+        //    // Getting store by id and including the animals list
+        //    var store = await _context.Stores.Include(s => s.Animals).ThenInclude(a => a.Species).FirstOrDefaultAsync(s => s.Id == storeId);
+
+        //    // Mapping The animals to theire species and keep unique species
+        //    // Warning checks are not nessecary, they are already check in the controller
+        //    var storeSpecies = store.Animals.Select(a => a.Species);
+
+        //    return storeSpecies.Distinct();
+        //}
     }
 }

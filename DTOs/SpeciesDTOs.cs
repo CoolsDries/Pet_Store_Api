@@ -24,4 +24,17 @@ namespace Pet_Store_Api.DTOs
         public int BasePrice { get; set; }
         public string? Description { get; set; }
     }
+
+    static class SpeciesDTOMapper
+    {
+        public static Species SpeciesPostDTO_to_Species(SpeciesPostDTO speciesPostDTO)
+        {
+            return new Species
+            {
+                Name = speciesPostDTO.Name,
+                BasePrice = speciesPostDTO.BasePrice,
+                Description = speciesPostDTO.Description
+            };
+        }
+    }
 }

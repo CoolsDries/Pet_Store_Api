@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Pet_Store_Api.DTOs;
 using Pet_Store_Api.Models;
 using Pet_Store_Api.Models.Interfaces;
@@ -10,14 +9,12 @@ namespace Pet_Store_Api.Controllers
     [ApiController]
     public class SpeciesController : ControllerBase
     {
-        private readonly ISpeciesRepository _speciesRepository;
-        private readonly IAnimalRepository _animalRepository;
+        private readonly ISpeciesService _speciesService;
 
         // id in SpeciesController always references speciesId
-        public SpeciesController(ISpeciesRepository speciesRepository, IAnimalRepository animalRepository)
+        public SpeciesController(ISpeciesService speciesService)
         {
-            _speciesRepository = speciesRepository;
-            _animalRepository = animalRepository;
+            _speciesService = speciesService;
         }
 
         // GET: api/Species
@@ -26,12 +23,7 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                var species = await _speciesRepository.GetSpecies();
-
-                if (species.IsNullOrEmpty())
-                {
-                    return NotFound("Species not found."); //code 404
-                }
+                var species = await _speciesService.GetSpecies();
 
                 var speciesDTOs = species.Select(s => new SpeciesGetDTO(s)).ToList();
 
@@ -49,60 +41,9 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                // If species exist, returns that species
-                var species = await CheckIfSpeciesExist(id);
+                var species = await _speciesService.GetSpeciesById(id);
 
                 return Ok(new SpeciesGetDTO(species));
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        // GET: api/Species/{id}/Animals
-        [HttpGet("{id}/Animals")]
-        public async Task<IActionResult> GetSpeciesAnimals(int id)
-        {
-            try
-            {
-                await CheckIfSpeciesExist(id);
-
-                var animals = await _animalRepository.GetAnimalsBySpieciesId(id);
-
-                if (animals.IsNullOrEmpty())
-                {
-                    return NotFound("Animals not found."); //code 404
-                }
-
-                var animalDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
-
-                return Ok(animalDTOs);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        // PUT: api/Species/{id}
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSpecies(int id, Species species)
-        {
-            if (id != species.Id)
-            {
-                return BadRequest("Id does not match species.Id"); //code 400
-            }
-
-            try
-            {
-                await CheckIfSpeciesExist(id);
-
-                _speciesRepository.UpdateSpecies(species);
-                await _speciesRepository.Save();
-
-                return Ok(); //code 200
             }
             catch (Exception)
             {
@@ -115,19 +56,11 @@ namespace Pet_Store_Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Species>> PostSpecies(SpeciesPostDTO speciesPostDTO)
         {
-            // TODO: check if resource already exists //code 409
-
             try
             {
-                Species species = new Species 
-                {
-                    Name = speciesPostDTO.Name,
-                    BasePrice = speciesPostDTO.BasePrice,
-                    Description = speciesPostDTO.Description
-                };
+                var species = SpeciesDTOMapper.SpeciesPostDTO_to_Species(speciesPostDTO);
 
-                _speciesRepository.InsertSpecies(species);
-                await _speciesRepository.Save();
+                await _speciesService.InsertSpecies(species);
 
                 return Created(); //code 201
             }
@@ -143,10 +76,7 @@ namespace Pet_Store_Api.Controllers
         {
             try
             {
-                await CheckIfSpeciesExist(id);
-
-                _speciesRepository.DeleteSpecies(id);
-                await _speciesRepository.Save();
+                await _speciesService.DeleteSpecies(id);
 
                 return Ok(); //code 200
             }
@@ -156,17 +86,46 @@ namespace Pet_Store_Api.Controllers
             }
         }
 
-        // Check if speices exist and returns species, if not throw not found exception.
-        private async Task<Species> CheckIfSpeciesExist(int id)
+        // PUT: api/Species/{id}
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutSpecies(int id, Species species)
         {
-            var species = await _speciesRepository.GetSpeciesById(id);
-
-            if (species == null)
+            try
             {
-                throw new NotFoundException($"Species with ID {id} not found.");
-            }
+                await _speciesService.UpdateSpecies(id, species);
 
-            return species;
+                return Ok(); //code 200
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
+
+        //// GET: api/Species/{id}/Animals
+        //[HttpGet("{id}/Animals")]
+        //public async Task<IActionResult> GetSpeciesAnimals(int id)
+        //{
+        //    try
+        //    {
+        //        await CheckIfSpeciesExist(id);
+
+        //        var animals = await _animalRepository.GetAnimalsBySpieciesId(id);
+
+        //        if (animals.IsNullOrEmpty())
+        //        {
+        //            return NotFound("Animals not found."); //code 404
+        //        }
+
+        //        var animalDTOs = animals.Select(a => new AnimalGetDTO(a)).ToList();
+
+        //        return Ok(animalDTOs);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
     }
 }
