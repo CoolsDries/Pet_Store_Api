@@ -16,7 +16,7 @@ namespace Pet_Store_Api.Controllers
             _chartService = chartService;
         }
 
-        [HttpGet]
+        [HttpGet("SpeciesAmountForStores")]
         public async Task<IActionResult> GetSpeciesAmountForStores([FromQuery] int[] ids)
         {
 
