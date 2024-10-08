@@ -5,5 +5,7 @@ namespace Pet_Store_Api.Models.Interfaces
     public interface IChartService
     {
         Task<Chart_SpeciesAmountForStores_DTO> GetSpeciesAmountForStores(int[] ids);
+        Task<Chart_CompareSpeciesAmountForStores_DTO> GetCompareSpeciesAmountForStores(int[] ids);
+        
     }
 }

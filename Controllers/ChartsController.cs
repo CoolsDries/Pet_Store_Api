@@ -20,9 +20,17 @@ namespace Pet_Store_Api.Controllers
         public async Task<IActionResult> GetSpeciesAmountForStores([FromQuery] int[] ids)
         {
 
-            var speciesAmount = await _chartService.GetSpeciesAmountForStores(ids);
+            var speciesAmountForStores = await _chartService.GetSpeciesAmountForStores(ids);
 
-            return Ok(speciesAmount);
+            return Ok(speciesAmountForStores);
+        }
+
+        [HttpGet("CompaireSpeciesAmountForStores")]
+        public async Task<IActionResult> GetCompareSpeciesAmountForStores([FromQuery] int[] ids)
+        {
+            var compareSpeciesAmountForStores = await _chartService.GetCompareSpeciesAmountForStores(ids);
+
+            return Ok(compareSpeciesAmountForStores);
         }
     }
 }
