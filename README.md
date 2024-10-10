@@ -1,9 +1,10 @@
 # PetStore api
 
-Target framework: .NET 8.0
-C# version: 12.0
-Visual Studio 2022
-SQL Server
+* Target framework: .NET 8.0
+* C# version: 12.0
+* Visual Studio 2022
+* SQL Server
+
 
 ## How To Run
 
